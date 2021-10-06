@@ -1,7 +1,7 @@
 package main
 
-import "dsa/arrays"
+import "dsa/stacksArray"
 
 func main(){
-	arrays.Array()
+	stacksArray.IsFull()
 }
