@@ -1,59 +1,57 @@
 package stacksArray
 
-import (
-	"errors"
-)
+import "errors"
 
 const stackSize = 5
-var stack [] int
-var top int = 0
 
-// isEmpty
-func IsEmpty() bool{
-	if(len(stack) == 0){
-		return true
-	}else{
-		return false
-	}
+type StackArray struct{
+	stack [stackSize]int
+	top int
 }
-// isFull
-func IsFull() bool{
-	if(len(stack) < stackSize){
-		return false
-	}else{
-		return true
-	}
-}
+
 // push
-func Push(x int) error {
-	if(IsFull()){
+func (s *StackArray) Push(x int) error {
+	// check for stack overflow
+	if s.IsFull(){
 		return errors.New("stack is full")
-	}else{
-		if(!IsEmpty()){
-			top++
-		}
-		stack = append(stack, x)
 	}
+
+	s.top++
+	s.stack[s.top] = x
 	return nil
 }
-// pop
-func Pop() (int, error){
-	var popped int
-	if(IsEmpty()){
+
+// pop top node in the stack
+func (s *StackArray) Pop() (int, error){
+	// check for stack underflow
+	if s.IsEmpty() {
 		return 0, errors.New("stack is empty")
-	}else{
-		popped = stack[top]
-		stack[top] = 0
-		stack = stack[:top]
-		top--
 	}
-	return popped, nil
+
+	// save top node
+	top := s.stack[s.top]
+	s.stack[s.top] = 0
+	s.top--
+
+	return top, nil
 }
-// peek
-func Peek() (int, error){
-	if(IsEmpty()){
+
+// peek top node in the stack
+func (s *StackArray) Peek() (int, error){
+	// check for stack underflow
+	if s.IsEmpty() {
 		return 0, errors.New("stack is empty")
-	}else{
-		return stack[top], nil
 	}
+
+	return s.stack[s.top], nil
+}
+
+// isEmpty
+func (s *StackArray) IsEmpty() bool{
+	return s.top == -1
+}
+
+// isFull
+func (s *StackArray) IsFull() bool{
+	return s.top >= stackSize
 }
