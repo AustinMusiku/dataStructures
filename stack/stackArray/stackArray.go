@@ -1,4 +1,4 @@
-package stacksArray
+package stackArray
 
 import "errors"
 
