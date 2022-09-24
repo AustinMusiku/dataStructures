@@ -125,6 +125,7 @@ func ( l *singlyLinkedlist ) IndexOf(value int) int {
 	for i, current := 0, l.head; current != nil; i, current = i+1, current.next {
 		if current.data == value {
 			index = i
+			break
 		}
 	}
 	return index
