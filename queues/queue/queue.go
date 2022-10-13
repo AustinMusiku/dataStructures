@@ -2,29 +2,36 @@ package queue
 
 import "errors"
 
-type node struct {
-	data int
-	next *node
+type node[T comparable] struct {
+	data T
+	next *node[T]
 }
 
-type queue struct{
+type queue[T comparable] struct{
 	count int
-	head  *node
-	tail  *node
+	head  *node[T]
+	tail  *node[T]
 }
 
 // initialize new Queue
-func NewQueue() *queue{
-	return &queue{ 0, nil, nil}
+func NewQueue[T comparable]() *queue[T]{
+	queue := new(queue[T])
+	queue.count = 0
+	queue.head = nil
+	queue.tail = nil
+	return queue
 }
 
 // create new node
-func NewNode(data int) *node{
-	return &node{ data, nil }
+func NewNode[T comparable](data T) *node[T]{
+	node := new(node[T])
+	node.data = data
+	node.next = nil
+	return node
 }
 
 // Enqueue - Add node to the end of the queue
-func (q *queue) Enqueue(data int) {
+func (q *queue[T]) Enqueue(data T) {
 	newNode := NewNode(data)
 	// if empty tail equal head
 	if q.count == 0 {
@@ -40,7 +47,7 @@ func (q *queue) Enqueue(data int) {
 	q.count++
 }
 // Dequeue - Remove node from the front of the queue
-func ( q *queue ) Dequeue() (*node, error) {
+func ( q *queue[T] ) Dequeue() (*node[T], error) {
 	// check if queue is empty
 	if q.count == 0 {
 		return nil, errors.New("queue is empty")

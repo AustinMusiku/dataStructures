@@ -1,32 +1,38 @@
-package dqueue
+package dQueue
 
 import "errors"
 
-type node struct {
-	data int
-	next *node
+type node[T comparable] struct {
+	data T
+	next *node[T]
 }
 
-type dqueue struct {
+type dQueue[T comparable] struct {
 	count int
-	head  *node
-	tail  *node
+	head  *node[T]
+	tail  *node[T]
 }
 
 // initialize new Queue
-func NewQueue() *dqueue{
-	return &dqueue{ 0, nil, nil}
+func NewQueue[T comparable]() *dQueue[T]{
+	dQueue := new(dQueue[T])
+	dQueue.count = 0
+	dQueue.head = nil
+	dQueue.tail = nil
+	return dQueue
 }
 
 // create new node
-func NewNode(data int) *node{
-	return &node{ data, nil }
+func NewNode[T comparable](data T) *node[T]{
+	node := new(node[T])
+	node.data = data
+	node.next = nil
+	return node
 }
 
-// EnqueueFront.
-// Reverse enqueue.
+// EnqueueFront - Reverse enqueue.
 // Add node to the front of the queue.
-func (q *dqueue) EnqueueFront(data int) {
+func (q *dQueue[T]) EnqueueFront(data T) {
 	newNode := NewNode(data)
 	// if empty tail equal head
 	if q.count == 0 {
@@ -44,7 +50,7 @@ func (q *dqueue) EnqueueFront(data int) {
 
 // EnqueueBack.
 // Add node to the Back of the queue.
-func (q *dqueue) EnqueueBack(data int) {
+func (q *dQueue[T]) EnqueueBack(data T) {
 	newNode := NewNode(data)
 	// if empty tail equal head
 	if q.count == 0 {
@@ -62,7 +68,7 @@ func (q *dqueue) EnqueueBack(data int) {
 
 // DequeueFront.
 // Remove node from the front of the queue.
-func ( q *dqueue ) DequeueFront() (*node, error) {
+func ( q *dQueue[T] ) DequeueFront() (*node[T], error) {
 	// check if queue is empty
 	if q.count == 0 {
 		return nil, errors.New("queue is empty")
@@ -76,10 +82,9 @@ func ( q *dqueue ) DequeueFront() (*node, error) {
 	return current, nil
 }
 
-// DequeueBack.
-// Reverse dequeue.  
+// DequeueBack - Reverse dequeue.  
 // Remove node from the Back of the queue.
-func ( q *dqueue ) DequeueBack() (*node, error) {
+func ( q *dQueue[T] ) DequeueBack() (*node[T], error) {
 	// check if queue is empty
 	if q.count == 0 {
 		return nil, errors.New("queue is empty")
@@ -102,7 +107,7 @@ func ( q *dqueue ) DequeueBack() (*node, error) {
 }
 
 // traverse
-func (q *dqueue) Traverse(i int) (*node ,error) {
+func (q *dQueue[T]) Traverse(i int) (*node[T] ,error) {
 	// check out of Bounds
 	if i >= q.count {
 		return nil, errors.New("out of Bounds")	

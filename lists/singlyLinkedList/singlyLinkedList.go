@@ -2,30 +2,37 @@ package singlyLinkedList
 
 import "errors"
 
-type node struct {
-	data int
-	next *node
+type node[T comparable] struct {
+	data T
+	next *node[T]
 }
 
-type singlyLinkedlist struct{
+type singlyLinkedlist[T comparable] struct{
 	count int
-	head  *node
-	tail  *node
+	head  *node[T]
+	tail  *node[T]
 }
 
 // initialize new List
-func NewList() *singlyLinkedlist{
-	return &singlyLinkedlist{ 0, nil, nil }
+func NewList[T comparable]() *singlyLinkedlist[T]{
+	list := new(singlyLinkedlist[T])
+	list.count = 0
+	list.head = nil
+	list.tail = nil
+	return list
 }
 
 // create new node
-func NewNode(data int) *node{
-	return &node{ data, nil }
+func NewNode[T comparable](data T) *node[T]{
+	node := new(node[T])
+	node.data = data
+	node.next = nil
+	return node
 }
 
 
-// Add. Add node at the end of the list
-func ( l *singlyLinkedlist ) Add(data int) {
+// Add - Add node at the end of the list
+func ( l *singlyLinkedlist[T] ) Add(data T) {
 	newNode := NewNode(data)
 	// check if list is empty 
 	if l.IsEmpty() {
@@ -38,8 +45,8 @@ func ( l *singlyLinkedlist ) Add(data int) {
 	l.count++
 }
 
-// InsertAt. Add node to a specific index
-func ( l *singlyLinkedlist ) InsertAt(index, data int) error {
+// InsertAt - Add node to a specific index
+func ( l *singlyLinkedlist[T] ) InsertAt(index int, data T) error {
 	// out of bounds
 	if index < 0 || index > l.count{
 		return errors.New("out of bounds")
@@ -62,14 +69,14 @@ func ( l *singlyLinkedlist ) InsertAt(index, data int) error {
 	return nil
 }
 
-// RemoveAt. Remove node at a specific index
-func ( l *singlyLinkedlist ) RemoveAt(index int) ( *node, error ) {
+// RemoveAt - Remove node at a specific index
+func ( l *singlyLinkedlist[T] ) RemoveAt(index int) ( *node[T], error ) {
 	// Check if out of bounds
 	if index < 0 || index > l.count{
 		return nil, errors.New("out of bounds")
 	}
 	
-	var removedNode *node
+	var removedNode *node[T]
 
 	if l.count == 1 {
 		removedNode = l.head
@@ -91,15 +98,15 @@ func ( l *singlyLinkedlist ) RemoveAt(index int) ( *node, error ) {
 	return removedNode, nil
 }
 
-// Clear. Remove all nodes from the list
-func ( l *singlyLinkedlist ) Clear() {
+// Clear - Remove all nodes from the list
+func ( l *singlyLinkedlist[T] ) Clear() {
 	l.count = 0
 	l.head = nil
 	l.tail = nil
 }
 
-// GetAt. Get an element at a specific index
-func ( l *singlyLinkedlist ) GetAt(index int) ( *node, error ){
+// GetAt - Get an element at a specific index
+func ( l *singlyLinkedlist[T] ) GetAt(index int) ( *node[T], error ){
 	// Check if out of bounds
 	if index < 0 || index > l.count{
 		return nil, errors.New("out of bounds")
@@ -119,8 +126,8 @@ func ( l *singlyLinkedlist ) GetAt(index int) ( *node, error ){
 }
 
 
-// IndexOf. Get Index of an element
-func ( l *singlyLinkedlist ) IndexOf(value int) int {
+// IndexOf - Get Index of an element
+func ( l *singlyLinkedlist[T] ) IndexOf(value T) int {
 	index := -1
 	for i, current := 0, l.head; current != nil; i, current = i+1, current.next {
 		if current.data == value {
@@ -132,6 +139,6 @@ func ( l *singlyLinkedlist ) IndexOf(value int) int {
 }
 
 // IsEmpty
-func ( l *singlyLinkedlist ) IsEmpty() bool {
+func ( l *singlyLinkedlist[T] ) IsEmpty() bool {
 	return l.count == 0
 }
