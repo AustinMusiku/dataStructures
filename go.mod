@@ -1,4 +1,4 @@
-module dsa
+module github.com/AustinMusiku/dataStructures
 
 go 1.19
 
