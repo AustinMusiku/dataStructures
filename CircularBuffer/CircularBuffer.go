@@ -2,9 +2,11 @@ package CircularBuffer
 
 import (
 	"errors"
+	"sync"
 )
 
 type circularBuffer[T any] struct {
+	mu    sync.Mutex
 	items []T
 	read  int
 	write int
@@ -20,6 +22,9 @@ func NewCircularBuffer[T any](size uint) *circularBuffer[T] {
 
 // Add items to the buffer
 func (c *circularBuffer[T]) Write(data T) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if c.IsFull() {
 		return errors.New("buffer is full. Can't write to buffer")
 	}
@@ -34,6 +39,9 @@ func (c *circularBuffer[T]) Write(data T) error {
 
 // Consume items from the buffer
 func (c *circularBuffer[T]) Read() (*T, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if c.IsEmpty() {
 		return nil, errors.New("buffer is empty. Can't read from buffer")
 	}
@@ -55,6 +63,9 @@ func (c *circularBuffer[T]) Peek() *T {
 }
 
 func (c *circularBuffer[T]) Resize(factor uint) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	tempArr := make([]T, len(c.items)*int(factor))
 
 	if elementsCopied := copy(tempArr, c.items); elementsCopied != len(c.items) {
@@ -67,6 +78,9 @@ func (c *circularBuffer[T]) Resize(factor uint) error {
 
 // Reset the buffer and return the items currently in the buffer
 func (c *circularBuffer[T]) Clear() []T {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	c.read = -1
 	c.write = -1
 	return c.items
