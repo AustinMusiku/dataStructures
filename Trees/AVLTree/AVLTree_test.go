@@ -5,8 +5,10 @@ import (
 )
 
 func TestAVLTree(t *testing.T) {
+	t.Parallel()
 
 	t.Run("Create new tree", func(t *testing.T) {
+		t.Parallel()
 		tree := NewAVLTree[int]()
 		if tree.Root != nil {
 			t.Errorf("Expected root to be nil, got %v", tree.Root)
@@ -14,6 +16,7 @@ func TestAVLTree(t *testing.T) {
 	})
 
 	t.Run("Create new node", func(t *testing.T) {
+		t.Parallel()
 		node := NewNode[int](5)
 		if node.Data != 5 {
 			t.Errorf("Expected node data to be 5, got %v", node.Data)
@@ -30,6 +33,7 @@ func TestAVLTree(t *testing.T) {
 	})
 
 	t.Run("Add node to tree", func(t *testing.T) {
+		t.Parallel()
 		tree := NewAVLTree[int]()
 		tree.AddNode(6)
 		tree.AddNode(3)
@@ -49,6 +53,7 @@ func TestAVLTree(t *testing.T) {
 	})
 
 	t.Run("Print tree", func(t *testing.T) {
+		t.Parallel()
 		type testPrintTreeStruct struct {
 			args     []int
 			expected []int
@@ -81,6 +86,7 @@ func TestAVLTree(t *testing.T) {
 	})
 
 	t.Run("Balances tree", func(t *testing.T) {
+		t.Parallel()
 		type testBalanceTreeStruct struct {
 			args     []int
 			expected int
