@@ -69,7 +69,7 @@ func TestAVLTree(t *testing.T) {
 				tree.AddNode(arg)
 			}
 
-			printed := PrintTree[int](tree.Root)
+			printed := tree.Root.PrintTree()
 
 			for i, node := range printed {
 				if node != test.expected[i] {

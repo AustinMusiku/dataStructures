@@ -1,14 +1,18 @@
 package AVLTree
 
 import (
+	"sync"
+
 	"golang.org/x/exp/constraints"
 )
 
 type avlTree[T constraints.Ordered] struct {
+	mu   sync.Mutex
 	Root *node[T]
 }
 
 type node[T constraints.Ordered] struct {
+	mu     sync.Mutex
 	Data   T
 	Left   *node[T]
 	Right  *node[T]
@@ -22,104 +26,117 @@ func NewAVLTree[T constraints.Ordered]() *avlTree[T] {
 }
 
 func NewNode[T constraints.Ordered](data T) *node[T] {
-	return &node[T]{data, nil, nil, 1}
+	return &node[T]{
+		Data:   data,
+		Left:   nil,
+		Right:  nil,
+		height: 1,
+	}
 }
 
 // AddNode using the insert function
 func (a *avlTree[T]) AddNode(data T) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
 	newNode := NewNode(data)
 	if a.Root == nil {
 		a.Root = newNode
 	} else {
-		a.Root = insert(a.Root, newNode)
+		a.Root = a.Root.insert(newNode)
 	}
 }
 
 // Recursively insert the newnode at the correct place
-func insert[T constraints.Ordered](node *node[T], newNode *node[T]) *node[T] {
-	if node == nil {
+func (n *node[T]) insert(newNode *node[T]) *node[T] {
+	if n == nil {
 		return newNode
 	}
 
-	if newNode.Data < node.Data {
-		node.Left = insert(node.Left, newNode)
+	if newNode.Data < n.Data {
+		n.Left = n.Left.insert(newNode)
 	} else {
-		node.Right = insert(node.Right, newNode)
+		n.Right = n.Right.insert(newNode)
 	}
 
 	// update height of ancestor node
-	node.height = maxHeight(getHeight(node.Left), getHeight(node.Right)) + 1
+	n.height = maxHeight(n.Left.getHeight(), n.Right.getHeight()) + 1
 
 	// get balance factor
-	balance := getBalanceFactor(node)
+	balance := n.getBalanceFactor()
 
 	// if node is imbalanced:
 	if balance > 1 || balance < -1 {
 		// left left imbalance
-		if getBalanceFactor(node) == 2 && getBalanceFactor(node.Left) == 1 {
-			return rotateTree[T]("right", node)
+		if n.getBalanceFactor() == 2 && n.Left.getBalanceFactor() == 1 {
+			return n.rotateTree("right")
 		}
 		// left right imbalance
-		if getBalanceFactor(node) == 2 && getBalanceFactor(node.Left) == -1 {
-			node.Left = rotateTree[T]("left", node.Left)
-			return rotateTree[T]("right", node)
+		if n.getBalanceFactor() == 2 && n.Left.getBalanceFactor() == -1 {
+			n.Left = n.Left.rotateTree("left")
+			return n.rotateTree("right")
 		}
 		// right right imbalance
-		if getBalanceFactor(node) == -2 && getBalanceFactor(node.Right) == -1 {
-			return rotateTree[T]("left", node)
+		if n.getBalanceFactor() == -2 && n.Right.getBalanceFactor() == -1 {
+			return n.rotateTree("left")
 		}
 		// right left imbalance
-		if getBalanceFactor(node) == -2 && getBalanceFactor(node.Right) == 1 {
-			node.Right = rotateTree[T]("right", node.Right)
-			return rotateTree[T]("left", node)
+		if n.getBalanceFactor() == -2 && n.Right.getBalanceFactor() == 1 {
+			n.Right = n.Right.rotateTree("right")
+			return n.rotateTree("left")
 		}
 	}
 
-	return node
+	return n
 }
 
-func rotateTree[T constraints.Ordered](direction string, root *node[T]) *node[T] {
+// Balance the tree by rotating the subtree rooted at n in the given direction
+func (n *node[T]) rotateTree(direction string) *node[T] {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
 	var newRoot *node[T]
 
 	if direction == "left" {
-		newRoot = root.Right
-		root.Right = newRoot.Left
-		newRoot.Left = root
+		newRoot = n.Right
+		n.Right = newRoot.Left
+		newRoot.Left = n
 	} else {
-		newRoot = root.Left
-		root.Left = newRoot.Right
-		newRoot.Right = root
+		newRoot = n.Left
+		n.Left = newRoot.Right
+		newRoot.Right = n
 	}
 
-	root.height = maxHeight(getHeight(root.Left), getHeight(root.Right)) + 1
-	newRoot.height = maxHeight(getHeight(newRoot.Left), getHeight(newRoot.Right)) + 1
+	n.height = maxHeight(n.Left.getHeight(), n.Right.getHeight()) + 1
+	newRoot.height = maxHeight(n.Left.getHeight(), n.Right.getHeight()) + 1
 	return newRoot
 }
 
-func PrintTree[T constraints.Ordered](root *node[T]) []T {
-	if root == nil {
+// Returns the items slice of the subtree rooted at n
+func (n *node[T]) PrintTree() []T {
+	if n == nil {
 		return []T{}
 	}
 
 	var result []T
-	result = append(result, PrintTree(root.Left)...)
-	result = append(result, root.Data)
-	result = append(result, PrintTree(root.Right)...)
+	result = append(result, n.Left.PrintTree()...)
+	result = append(result, n.Data)
+	result = append(result, n.Right.PrintTree()...)
 	return result
 }
 
-func getHeight[T constraints.Ordered](root *node[T]) int {
-	if root == nil {
+func (n *node[T]) getHeight() int {
+	if n == nil {
 		return 0
 	}
-	return root.height
+	return n.height
 }
 
-func getBalanceFactor[T constraints.Ordered](root *node[T]) int {
-	if root == nil {
+func (n *node[T]) getBalanceFactor() int {
+	if n == nil {
 		return 0
 	}
-	return getHeight(root.Left) - getHeight(root.Right)
+	return n.Left.getHeight() - n.Right.getHeight()
 }
 
 func maxHeight(x, y int) int {
