@@ -33,6 +33,56 @@ func NewNode[T any](data T) *node[T] {
 	return node
 }
 
+func (n *node[T]) GetData() T {
+	return n.data
+}
+
+// --------------------------------------------
+// GETTERS ------------------------------------
+// --------------------------------------------
+func (n *node[T]) GetNext() *node[T] {
+	return n.next
+}
+
+func (l *singlyLinkedlist[T]) GetCount() int {
+	return l.count
+}
+
+func (l *singlyLinkedlist[T]) GetHead() *node[T] {
+	return l.head
+}
+
+func (l *singlyLinkedlist[T]) GetTail() *node[T] {
+	return l.tail
+}
+
+// --------------------------------------------
+// SETTERS ------------------------------------
+// --------------------------------------------
+func (n *node[T]) SetData(data T) {
+	n.data = data
+}
+
+func (n *node[T]) SetNext(next *node[T]) {
+	n.next = next
+}
+
+func (l *singlyLinkedlist[T]) SetCount(count int) {
+	l.count = count
+}
+
+func (l *singlyLinkedlist[T]) SetHead(head *node[T]) {
+	l.head = head
+}
+
+func (l *singlyLinkedlist[T]) SetTail(tail *node[T]) {
+	l.tail = tail
+}
+
+// --------------------------------------------
+// LIST METHODS -------------------------------
+// --------------------------------------------
+
 // Add - Add node at the end of the list
 func (l *singlyLinkedlist[T]) Add(data T) {
 	newNode := NewNode(data)
