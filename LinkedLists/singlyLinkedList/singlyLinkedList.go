@@ -6,22 +6,22 @@ import (
 	"sync"
 )
 
-type node[T any] struct {
+type Node[T any] struct {
 	mu   sync.Mutex
 	data T
-	next *node[T]
+	next *Node[T]
 }
 
-type singlyLinkedlist[T any] struct {
+type SinglyLinkedlist[T any] struct {
 	mu    sync.Mutex
 	count int
-	head  *node[T]
-	tail  *node[T]
+	head  *Node[T]
+	tail  *Node[T]
 }
 
 // initialize new List
-func NewList[T any]() *singlyLinkedlist[T] {
-	list := new(singlyLinkedlist[T])
+func NewList[T any]() *SinglyLinkedlist[T] {
+	list := new(SinglyLinkedlist[T])
 	list.count = 0
 	list.head = nil
 	list.tail = nil
@@ -29,68 +29,68 @@ func NewList[T any]() *singlyLinkedlist[T] {
 }
 
 // create new node
-func NewNode[T any](data T) *node[T] {
-	node := new(node[T])
+func NewNode[T any](data T) *Node[T] {
+	node := new(Node[T])
 	node.data = data
 	node.next = nil
 	return node
 }
 
-func (n *node[T]) GetData() T {
+func (n *Node[T]) GetData() T {
 	return n.data
 }
 
 // --------------------------------------------
 // GETTERS ------------------------------------
 // --------------------------------------------
-func (n *node[T]) GetNext() *node[T] {
+func (n *Node[T]) GetNext() *Node[T] {
 	return n.next
 }
 
-func (l *singlyLinkedlist[T]) GetCount() int {
+func (l *SinglyLinkedlist[T]) GetCount() int {
 	return l.count
 }
 
-func (l *singlyLinkedlist[T]) GetHead() *node[T] {
+func (l *SinglyLinkedlist[T]) GetHead() *Node[T] {
 	return l.head
 }
 
-func (l *singlyLinkedlist[T]) GetTail() *node[T] {
+func (l *SinglyLinkedlist[T]) GetTail() *Node[T] {
 	return l.tail
 }
 
 // --------------------------------------------
 // SETTERS ------------------------------------
 // --------------------------------------------
-func (n *node[T]) SetData(data T) {
+func (n *Node[T]) SetData(data T) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
 	n.data = data
 }
 
-func (n *node[T]) SetNext(next *node[T]) {
+func (n *Node[T]) SetNext(next *Node[T]) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 
 	n.next = next
 }
 
-func (l *singlyLinkedlist[T]) SetCount(count int) {
+func (l *SinglyLinkedlist[T]) SetCount(count int) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
 	l.count = count
 }
 
-func (l *singlyLinkedlist[T]) SetHead(head *node[T]) {
+func (l *SinglyLinkedlist[T]) SetHead(head *Node[T]) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
 	l.head = head
 }
 
-func (l *singlyLinkedlist[T]) SetTail(tail *node[T]) {
+func (l *SinglyLinkedlist[T]) SetTail(tail *Node[T]) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -102,7 +102,7 @@ func (l *singlyLinkedlist[T]) SetTail(tail *node[T]) {
 // --------------------------------------------
 
 // Add - Add node at the end of the list
-func (l *singlyLinkedlist[T]) Add(data T) {
+func (l *SinglyLinkedlist[T]) Add(data T) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -119,7 +119,7 @@ func (l *singlyLinkedlist[T]) Add(data T) {
 }
 
 // InsertAt - Add node to a specific index
-func (l *singlyLinkedlist[T]) InsertAt(index int, data T) error {
+func (l *SinglyLinkedlist[T]) InsertAt(index int, data T) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -153,7 +153,7 @@ func (l *singlyLinkedlist[T]) InsertAt(index int, data T) error {
 }
 
 // RemoveAt - Remove node at a specific index
-func (l *singlyLinkedlist[T]) RemoveAt(index int) (*node[T], error) {
+func (l *SinglyLinkedlist[T]) RemoveAt(index int) (*Node[T], error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -162,7 +162,7 @@ func (l *singlyLinkedlist[T]) RemoveAt(index int) (*node[T], error) {
 		return nil, errors.New("out of bounds")
 	}
 
-	var removedNode *node[T]
+	var removedNode *Node[T]
 
 	if l.count == 1 {
 		removedNode = l.head
@@ -187,7 +187,7 @@ func (l *singlyLinkedlist[T]) RemoveAt(index int) (*node[T], error) {
 }
 
 // Clear - Remove all nodes from the list
-func (l *singlyLinkedlist[T]) Clear() {
+func (l *SinglyLinkedlist[T]) Clear() {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -197,7 +197,7 @@ func (l *singlyLinkedlist[T]) Clear() {
 }
 
 // GetAt - Get an element at a specific index
-func (l *singlyLinkedlist[T]) GetAt(index int) (*node[T], error) {
+func (l *SinglyLinkedlist[T]) GetAt(index int) (*Node[T], error) {
 	// Check if out of bounds
 	if index < 0 || index > l.count {
 		return nil, errors.New("out of bounds")
@@ -217,7 +217,7 @@ func (l *singlyLinkedlist[T]) GetAt(index int) (*node[T], error) {
 }
 
 // IndexOf - Get Index of an element
-func (l *singlyLinkedlist[T]) IndexOf(value T) int {
+func (l *SinglyLinkedlist[T]) IndexOf(value T) int {
 	index := -1
 	for i, current := 0, l.head; current != nil; i, current = i+1, current.next {
 		if reflect.DeepEqual(current.data, value) {
@@ -229,6 +229,6 @@ func (l *singlyLinkedlist[T]) IndexOf(value T) int {
 }
 
 // IsEmpty
-func (l *singlyLinkedlist[T]) IsEmpty() bool {
+func (l *SinglyLinkedlist[T]) IsEmpty() bool {
 	return l.count == 0
 }
