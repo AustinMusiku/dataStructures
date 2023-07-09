@@ -3,14 +3,17 @@ package singlyLinkedList
 import (
 	"errors"
 	"reflect"
+	"sync"
 )
 
 type node[T any] struct {
+	mu   sync.Mutex
 	data T
 	next *node[T]
 }
 
 type singlyLinkedlist[T any] struct {
+	mu    sync.Mutex
 	count int
 	head  *node[T]
 	tail  *node[T]
@@ -60,22 +63,37 @@ func (l *singlyLinkedlist[T]) GetTail() *node[T] {
 // SETTERS ------------------------------------
 // --------------------------------------------
 func (n *node[T]) SetData(data T) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
 	n.data = data
 }
 
 func (n *node[T]) SetNext(next *node[T]) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
 	n.next = next
 }
 
 func (l *singlyLinkedlist[T]) SetCount(count int) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	l.count = count
 }
 
 func (l *singlyLinkedlist[T]) SetHead(head *node[T]) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	l.head = head
 }
 
 func (l *singlyLinkedlist[T]) SetTail(tail *node[T]) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	l.tail = tail
 }
 
@@ -85,6 +103,9 @@ func (l *singlyLinkedlist[T]) SetTail(tail *node[T]) {
 
 // Add - Add node at the end of the list
 func (l *singlyLinkedlist[T]) Add(data T) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	newNode := NewNode(data)
 	// check if list is empty
 	if l.IsEmpty() {
@@ -99,6 +120,9 @@ func (l *singlyLinkedlist[T]) Add(data T) {
 
 // InsertAt - Add node to a specific index
 func (l *singlyLinkedlist[T]) InsertAt(index int, data T) error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	// out of bounds
 	if index < 0 || index > l.count {
 		return errors.New("out of bounds")
@@ -130,6 +154,9 @@ func (l *singlyLinkedlist[T]) InsertAt(index int, data T) error {
 
 // RemoveAt - Remove node at a specific index
 func (l *singlyLinkedlist[T]) RemoveAt(index int) (*node[T], error) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	// Check if out of bounds
 	if index < 0 || index > l.count {
 		return nil, errors.New("out of bounds")
@@ -139,7 +166,9 @@ func (l *singlyLinkedlist[T]) RemoveAt(index int) (*node[T], error) {
 
 	if l.count == 1 {
 		removedNode = l.head
-		l.Clear()
+		l.head = nil
+		l.tail = nil
+		l.count--
 	} else if index == 0 {
 		removedNode = l.head
 		l.head = l.head.next
@@ -159,6 +188,9 @@ func (l *singlyLinkedlist[T]) RemoveAt(index int) (*node[T], error) {
 
 // Clear - Remove all nodes from the list
 func (l *singlyLinkedlist[T]) Clear() {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	l.count = 0
 	l.head = nil
 	l.tail = nil
