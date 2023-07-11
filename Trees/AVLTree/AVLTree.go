@@ -7,7 +7,6 @@ import (
 )
 
 type avlTree[T constraints.Ordered] struct {
-	mu   sync.Mutex
 	Root *node[T]
 }
 
@@ -36,9 +35,6 @@ func NewNode[T constraints.Ordered](data T) *node[T] {
 
 // AddNode using the insert function
 func (a *avlTree[T]) AddNode(data T) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-
 	newNode := NewNode(data)
 	if a.Root == nil {
 		a.Root = newNode
