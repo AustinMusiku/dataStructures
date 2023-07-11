@@ -53,9 +53,6 @@ func (b *bucket[K, V]) Add(key K, value V) {
 
 // Get - get the value of a node by key
 func (b *bucket[K, V]) Get(key K) (*node[K, V], error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
 	for current := b.head; current != nil; current = current.next {
 		// if key matches
 		if current.key == key {
@@ -68,13 +65,12 @@ func (b *bucket[K, V]) Get(key K) (*node[K, V], error) {
 
 // Update - modify the value of a node by key
 func (b *bucket[K, V]) Update(key K, value V) (*node[K, V], error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
 	for current := b.head; current != nil; current = current.next {
 		// if key matches
 		if current.key == key {
+			current.mu.Lock()
 			current.value = value
+			current.mu.Unlock()
 
 			return current, nil
 		}
@@ -137,70 +133,4 @@ func (b *bucket[K, V]) Clear() {
 // IsEmpty
 func (b *bucket[K, V]) IsEmpty() bool {
 	return b.count == 0
-}
-
-// --------------------------------------------
-// GETTERS ------------------------------------
-// --------------------------------------------
-// node ------------------------------------
-func (n *node[K, V]) GetKey() K {
-	return n.key
-}
-
-func (n *node[K, V]) GetValue() V {
-	return n.value
-}
-
-func (n *node[K, V]) GetNext() *node[K, V] {
-	return n.next
-}
-
-// bucket ------------------------------------
-func (b *bucket[K, V]) GetCount() int {
-	return b.count
-}
-
-func (b *bucket[K, V]) GetHead() *node[K, V] {
-	return b.head
-}
-
-// --------------------------------------------
-// SETTERS ------------------------------------
-// --------------------------------------------
-
-// node ------------------------------------
-func (n *node[K, V]) SetKey(key K) {
-	n.mu.Lock()
-	defer n.mu.Unlock()
-
-	n.key = key
-}
-
-func (n *node[K, V]) SetValue(value V) {
-	n.mu.Lock()
-	defer n.mu.Unlock()
-
-	n.value = value
-}
-
-func (n *node[K, V]) SetNext(next *node[K, V]) {
-	n.mu.Lock()
-	defer n.mu.Unlock()
-
-	n.next = next
-}
-
-// bucket ------------------------------------
-func (b *bucket[K, V]) SetCount(count int) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.count = count
-}
-
-func (b *bucket[K, V]) SetHead(head *node[K, V]) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	b.head = head
 }
