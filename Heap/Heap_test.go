@@ -34,19 +34,19 @@ func TestHeap(t *testing.T) {
 
 		testCase := testInsert{
 			args: []Sortable[int]{
-				{value: 8, priority: 8},
-				{value: 9, priority: 9},
-				{value: 12, priority: 12},
-				{value: 7, priority: 7},
-				{value: 11, priority: 11},
+				{Value: 8, Priority: 8},
+				{Value: 9, Priority: 9},
+				{Value: 12, Priority: 12},
+				{Value: 7, Priority: 7},
+				{Value: 11, Priority: 11},
 			},
 			expectedTop: []Sortable[int]{
-				{value: 12, priority: 12},
-				{value: 7, priority: 7},
+				{Value: 12, Priority: 12},
+				{Value: 7, Priority: 7},
 			},
 			expectedLast: []Sortable[int]{
-				{value: 8, priority: 8},
-				{value: 11, priority: 11},
+				{Value: 8, Priority: 8},
+				{Value: 11, Priority: 11},
 			},
 		}
 
@@ -55,7 +55,7 @@ func TestHeap(t *testing.T) {
 			heap := NewHeap[int](mode)
 
 			for _, arg := range testCase.args {
-				heap.Insert(arg.value, arg.priority)
+				heap.Insert(arg.Value, arg.Priority)
 			}
 
 			foundTop := heap.Peek()
@@ -68,12 +68,12 @@ func TestHeap(t *testing.T) {
 				t.Errorf("Expected heap size to be %d, got %d", len(testCase.args), heap.Size())
 			}
 
-			if mode == heap.mode && foundTop.priority != expectedTop.priority {
-				t.Errorf("Expected %s top item to be %d, got %d", mode, expectedTop.priority, foundTop.priority)
+			if mode == heap.mode && foundTop.Priority != expectedTop.Priority {
+				t.Errorf("Expected %s top item to be %d, got %d", mode, expectedTop.Priority, foundTop.Priority)
 			}
 
-			if mode == heap.mode && foundLastItem.priority != expectedLastItem.priority {
-				t.Errorf("Expected %s last item to be %d, got %d", mode, expectedLastItem.priority, foundLastItem.priority)
+			if mode == heap.mode && foundLastItem.Priority != expectedLastItem.Priority {
+				t.Errorf("Expected %s last item to be %d, got %d", mode, expectedLastItem.Priority, foundLastItem.Priority)
 			}
 		}
 	})
@@ -90,23 +90,23 @@ func TestHeap(t *testing.T) {
 
 		testCase := testRemove{
 			args: []Sortable[int]{
-				{value: 8, priority: 8},
-				{value: 9, priority: 9},
-				{value: 12, priority: 12},
-				{value: 7, priority: 7},
-				{value: 11, priority: 11},
+				{Value: 8, Priority: 8},
+				{Value: 9, Priority: 9},
+				{Value: 12, Priority: 12},
+				{Value: 7, Priority: 7},
+				{Value: 11, Priority: 11},
 			},
 			expectedRemoved: []Sortable[int]{
-				{value: 12, priority: 12},
-				{value: 7, priority: 7},
+				{Value: 12, Priority: 12},
+				{Value: 7, Priority: 7},
 			},
 			expectedTop: []Sortable[int]{
-				{value: 11, priority: 11},
-				{value: 8, priority: 8},
+				{Value: 11, Priority: 11},
+				{Value: 8, Priority: 8},
 			},
 			expectedLast: []Sortable[int]{
-				{value: 7, priority: 7},
-				{value: 11, priority: 11},
+				{Value: 7, Priority: 7},
+				{Value: 11, Priority: 11},
 			},
 		}
 
@@ -115,7 +115,7 @@ func TestHeap(t *testing.T) {
 			heap := NewHeap[int](mode)
 
 			for _, arg := range testCase.args {
-				heap.Insert(arg.value, arg.priority)
+				heap.Insert(arg.Value, arg.Priority)
 			}
 
 			removed := heap.Remove()
@@ -131,16 +131,16 @@ func TestHeap(t *testing.T) {
 				t.Errorf("Expected heap size to be %d, got %d", len(testCase.args)-1, heap.Size())
 			}
 
-			if removed.priority != expectedRemoved.priority {
-				t.Errorf("Expected removed item to be %d, got %d", expectedRemoved.priority, removed.priority)
+			if removed.Priority != expectedRemoved.Priority {
+				t.Errorf("Expected removed item to be %d, got %d", expectedRemoved.Priority, removed.Priority)
 			}
 
-			if mode == heap.mode && foundTop.priority != expectedTop.priority {
-				t.Errorf("Expected %s top item to be %d, got %d", mode, expectedTop.priority, foundTop.priority)
+			if mode == heap.mode && foundTop.Priority != expectedTop.Priority {
+				t.Errorf("Expected %s top item to be %d, got %d", mode, expectedTop.Priority, foundTop.Priority)
 			}
 
-			if mode == heap.mode && foundLastItem.priority != expectedLastItem.priority {
-				t.Errorf("Expected %s last item to be %d, got %d", mode, expectedLastItem.priority, foundLastItem.priority)
+			if mode == heap.mode && foundLastItem.Priority != expectedLastItem.Priority {
+				t.Errorf("Expected %s last item to be %d, got %d", mode, expectedLastItem.Priority, foundLastItem.Priority)
 			}
 		}
 	})
@@ -155,15 +155,15 @@ func TestHeap(t *testing.T) {
 
 		testCase := testPeek{
 			args: []Sortable[int]{
-				{value: 8, priority: 8},
-				{value: 9, priority: 9},
-				{value: 12, priority: 12},
-				{value: 7, priority: 7},
-				{value: 11, priority: 11},
+				{Value: 8, Priority: 8},
+				{Value: 9, Priority: 9},
+				{Value: 12, Priority: 12},
+				{Value: 7, Priority: 7},
+				{Value: 11, Priority: 11},
 			},
 			expected: []Sortable[int]{
-				{value: 12, priority: 12},
-				{value: 7, priority: 7},
+				{Value: 12, Priority: 12},
+				{Value: 7, Priority: 7},
 			},
 		}
 
@@ -172,14 +172,14 @@ func TestHeap(t *testing.T) {
 			heap := NewHeap[int](mode)
 
 			for _, arg := range testCase.args {
-				heap.Insert(arg.value, arg.priority)
+				heap.Insert(arg.Value, arg.Priority)
 			}
 
 			found := heap.Peek()
 			expected := testCase.expected[i]
 
-			if found.priority != expected.priority {
-				t.Errorf("Expected %s heap peeked item to be %d, got %d", mode, expected.priority, found.priority)
+			if found.Priority != expected.Priority {
+				t.Errorf("Expected %s heap peeked item to be %d, got %d", mode, expected.Priority, found.Priority)
 			}
 		}
 	})

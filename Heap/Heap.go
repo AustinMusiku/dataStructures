@@ -3,8 +3,8 @@ package Heap
 import "math"
 
 type Sortable[T any] struct {
-	value    T
-	priority int
+	Value    T
+	Priority int
 }
 
 type Heap[T any] struct {
@@ -60,16 +60,16 @@ func (h *Heap[T]) swap(index1, index2 int) {
 // Moves the last inserted item up the heap to its correct position
 func (h *Heap[T]) heapifyUp() {
 	inserted := h.size - 1 // the index of the last inserted item (the last item in the heap)
-	parent := h.getParentIndex(inserted)
+	parent := getParentIndex(inserted)
 
 	for h.hasParent(inserted) {
 		// performSwap returns true if the inserted node has a higher priority than its parent
-		performSwap := h.evaluateMode(h.items[inserted].priority, h.items[parent].priority)
+		performSwap := h.evaluateMode(h.items[inserted].Priority, h.items[parent].Priority)
 		if performSwap {
 			h.swap(inserted, parent)
 		}
 		inserted = parent
-		parent = h.getParentIndex(inserted)
+		parent = getParentIndex(inserted)
 	}
 }
 
@@ -81,16 +81,16 @@ func (h *Heap[T]) heapifyDown() {
 
 	for h.hasLeft(current) {
 		// prioritiseRight is true if the right child is present and has a higher priority than the left child
-		prioritiseRight := h.hasRight(current) && h.evaluateMode(h.getRight(current).priority, h.getLeft(current).priority)
+		prioritiseRight := h.hasRight(current) && h.evaluateMode(h.getRight(current).Priority, h.getLeft(current).Priority)
 
 		if prioritiseRight {
-			child = h.getRightIndex(current)
+			child = getRightIndex(current)
 		} else {
-			child = h.getLeftIndex(current)
+			child = getLeftIndex(current)
 		}
 
 		// perfomSwap is true if the current node has a child with a higher priority
-		performSwap := h.evaluateMode(h.items[child].priority, h.items[current].priority)
+		performSwap := h.evaluateMode(h.items[child].Priority, h.items[current].Priority)
 		if performSwap {
 			h.swap(current, child)
 		}
@@ -130,24 +130,24 @@ func (h *Heap[T]) hasRight(index int) bool {
 }
 
 // Returns the index of the parent
-func (h *Heap[T]) getParentIndex(index int) int {
+func getParentIndex(index int) int {
 	return int(math.Floor((float64(index) - 1) / 2))
 }
 
 // Returns the index of the left child
-func (h *Heap[T]) getLeftIndex(index int) int {
+func getLeftIndex(index int) int {
 	return index*2 + 1
 }
 
 // Returns the index of the right child
-func (h *Heap[T]) getRightIndex(index int) int {
+func getRightIndex(index int) int {
 	return index*2 + 2
 }
 
 // Returns the value of the left child
 func (h *Heap[T]) getLeft(index int) *Sortable[T] {
 	if h.hasLeft(index) {
-		return &h.items[h.getLeftIndex(index)]
+		return &h.items[getLeftIndex(index)]
 	}
 	return nil
 }
@@ -155,7 +155,7 @@ func (h *Heap[T]) getLeft(index int) *Sortable[T] {
 // Returns the value of the right child
 func (h *Heap[T]) getRight(index int) *Sortable[T] {
 	if h.hasRight(index) {
-		return &h.items[h.getRightIndex(index)]
+		return &h.items[getRightIndex(index)]
 	}
 	return nil
 }
