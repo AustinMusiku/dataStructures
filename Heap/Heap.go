@@ -25,7 +25,22 @@ func NewHeap[T any](mode string) *Heap[T] {
 // Add item to the heap
 func (h *Heap[T]) Insert(value T, priority int) {
 	item := Sortable[T]{value, priority}
-	h.items = append(h.items, item)
+
+	// if no removals have been made, append to the end of the array
+	// otherwise, insert at the end of the heap and shift the removed items 1 index to the right
+	if h.size == len(h.items) {
+		h.items = append(h.items, item)
+	} else {
+		newItems := make([]Sortable[T], len(h.items)+1)
+		removed := h.items[h.size:]
+		copy(newItems, h.items[:h.size])
+		newItems[h.size] = item
+		for i, x := range removed {
+			newItems[(h.size+1)+i] = x
+		}
+		h.items = newItems
+	}
+
 	h.size++
 	h.heapifyUp()
 }
