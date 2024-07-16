@@ -74,6 +74,17 @@ func (b *BTree) Insert(key []byte) error {
 	return err
 }
 
+func (b *BTree) Search(key []byte) ([]byte, bool) {
+	if len(key) == 0 {
+		return nil, false
+	}
+	if b.root == nil {
+		return nil, false
+	}
+
+	return b.root.search(key)
+}
+
 func (n *node) put(key []byte) (*node, error) {
 	idx := sort.Search(len(n.inodes), func(i int) bool {
 		return bytes.Compare(n.inodes[i], key) >= 0
@@ -102,6 +113,22 @@ func (n *node) put(key []byte) (*node, error) {
 	// if leaf node is full, split
 	keys := stretchInodes(n, key)
 	return n.rebalance(keys)
+}
+
+func (n *node) search(key []byte) ([]byte, bool) {
+	idx := sort.Search(len(n.inodes), func(i int) bool {
+		return bytes.Compare(n.inodes[i], key) >= 0
+	})
+
+	if idx < len(n.inodes) && bytes.Equal(key, n.inodes[idx]) {
+		return n.inodes[idx], true
+	}
+
+	if len(n.children) == 0 {
+		return nil, false
+	}
+
+	return n.children[idx].search(key)
 }
 
 func (n *node) rebalance(keys Inodes) (*node, error) {
