@@ -85,6 +85,19 @@ func (b *BTree) Search(key []byte) ([]byte, bool) {
 	return b.root.search(key)
 }
 
+func (b *BTree) Delete(key []byte) error {
+	if len(key) == 0 {
+		return fmt.Errorf("tree delete: empty key")
+	}
+
+	if b.root == nil {
+		return fmt.Errorf("tree delete: empty tree")
+	}
+
+	b.root.delete(key)
+	return nil
+}
+
 func (n *node) put(key []byte) (*node, error) {
 	idx := sort.Search(len(n.inodes), func(i int) bool {
 		return bytes.Compare(n.inodes[i], key) >= 0
@@ -131,6 +144,64 @@ func (n *node) search(key []byte) ([]byte, bool) {
 	return n.children[idx].search(key)
 }
 
+func (n *node) delete(key []byte) error {
+	idx := sort.Search(len(n.inodes), func(i int) bool {
+		return bytes.Compare(n.inodes[i], key) >= 0
+	})
+
+	if idx < len(n.inodes) && bytes.Equal(n.inodes[idx], key) {
+		err := delete(n, idx)
+		return err
+	}
+
+	if n.children[idx] != nil {
+		n.children[idx].delete(key)
+		// TODO: recursively borrow an key(aka inode) from L/R sibling or merge with either L/R sibling
+		if float64(len(n.children[idx].inodes)) < math.Floor((float64(n.order-1))/2) && n.parent != nil {
+			// borrow from left sibling
+			if idx > 0 && float64(len(n.children[idx-1].inodes)) > math.Floor((float64(n.order-1))/2) {
+				// move key from left child to parent
+				fromParent := n.inodes[idx-1]
+				n.inodes[idx-1] = n.children[idx-1].inodes[len(n.children[idx-1].inodes)-1]
+				n.children[idx].inodes.InsertAt(0, fromParent)
+				n.children[idx-1].inodes.RemoveAt(len(n.children[idx-1].inodes) - 1)
+
+				// move child node
+				n.children[idx].children.InsertAt(0, n.children[idx-1].children[len(n.children[idx-1].children)-1])
+				n.children[idx-1].children.RemoveAt(len(n.children[idx-1].children) - 1)
+			} else if idx < len(n.children)-1 && float64(len(n.children[idx+1].inodes)) > math.Floor((float64(n.order-1))/2) {
+				// move key from right child to parent
+				fromParent := n.inodes[idx]
+				n.inodes[idx] = n.children[idx+1].inodes[0]
+				n.children[idx].inodes = append(n.children[idx].inodes, fromParent)
+				n.children[idx+1].inodes.RemoveAt(0)
+				// move child node
+				n.children[idx].children = append(n.children[idx].children, n.children[idx+1].children[0])
+				n.children[idx+1].children.RemoveAt(0)
+			} else {
+				// merge into the left sibling
+				if idx > 0 {
+					n.children[idx-1].inodes = append(n.children[idx-1].inodes, n.inodes[idx-1])
+					n.children[idx-1].inodes = append(n.children[idx-1].inodes, n.children[idx].inodes...)
+					n.children[idx-1].children = append(n.children[idx-1].children, n.children[idx].children...)
+					n.inodes.RemoveAt(idx - 1)
+					n.children.RemoveAt(idx)
+				} else { // merge into the right sibling
+					n.children[idx].inodes = append(n.children[idx].inodes, n.inodes[idx])
+					n.children[idx].inodes = append(n.children[idx].inodes, n.children[idx+1].inodes...)
+					n.children[idx].children = append(n.children[idx].children, n.children[idx+1].children...)
+					n.inodes.RemoveAt(idx)
+					n.children.RemoveAt(idx + 1)
+				}
+			}
+		}
+	} else {
+		return fmt.Errorf("node delete: key not found")
+	}
+
+	return nil
+}
+
 func (n *node) rebalance(keys Inodes) (*node, error) {
 	right, midPoint := splitKeys(n, keys)
 	parent, inodeInsertionIdx := n.parent, 0
@@ -175,6 +246,118 @@ func splitKeys(n *node, keys Inodes) (*node, inode) {
 	midPoint := keys[splitIdx]
 
 	return child2, midPoint
+}
+
+func delete(n *node, deletionIdx int) error {
+	if len(n.children) > 0 { // internal node
+		// replace with inorder predecessor
+		successor := n.children[deletionIdx].getPredecessor()
+		// replace with inorder successor
+		if successor == nil {
+			successor = n.children[deletionIdx].getSuccessor()
+		}
+
+		if successor != nil {
+			n.inodes[deletionIdx] = successor
+			return nil
+		}
+
+		// merge left & right children
+		leftChild := n.children[deletionIdx]
+		rightChild := n.children[deletionIdx+1]
+
+		leftChild.inodes = append(leftChild.inodes, rightChild.inodes...)
+		leftChild.children = append(leftChild.children, rightChild.children...)
+
+		n.inodes.RemoveAt(deletionIdx)
+		n.children.RemoveAt(deletionIdx + 1)
+
+		return nil
+	}
+
+	// otherwise treat this(n) as a leaf node henceforth
+	if len(n.inodes) > ((n.order-1)/2)+1 {
+		n.inodes.RemoveAt(deletionIdx)
+		return nil
+	}
+
+	var donation inode
+	var leftSibling, rightSibling *node
+	parentDeletionIdx := sort.Search(len(n.parent.inodes), func(i int) bool {
+		return bytes.Compare(n.parent.inodes[i], n.inodes[deletionIdx]) >= 0
+	})
+
+	// borrow from left sibling
+	if parentDeletionIdx > 0 {
+		leftSibling = n.parent.children[parentDeletionIdx-1]
+		if len(leftSibling.inodes) > (n.order-1)/2 {
+			donation = leftSibling.inodes[len(leftSibling.inodes)-1]
+			leftSibling.inodes.RemoveAt(len(leftSibling.inodes) - 1)
+		}
+	}
+
+	// if left has none to donate, borrow from right sibling
+	if donation == nil && parentDeletionIdx < len(n.parent.children)-1 {
+		rightSibling = n.parent.children[parentDeletionIdx+1]
+		if len(rightSibling.inodes) > (n.order-1)/2 {
+			donation = rightSibling.inodes[0]
+			leftSibling.inodes.RemoveAt(0)
+		}
+	}
+
+	// if there was a donation, go ahead and accept it
+	if donation != nil {
+		fromParent := n.parent.inodes[parentDeletionIdx]
+		n.parent.inodes[parentDeletionIdx] = donation
+		n.inodes.InsertAt(n.inodes.getInsertionIdx(fromParent), fromParent)
+
+		return nil
+	}
+
+	// merge with left/right sibling
+	n.inodes.RemoveAt(deletionIdx)
+	// if leftSibling != nil {
+	// 	for i := len(leftSibling.inodes) - 1; i >= 0; i-- {
+	// 		n.inodes.InsertAt(0, leftSibling.inodes[i])
+	// 	}
+	// 	n.parent.children.RemoveAt(parentDeletionIdx - 1)
+	// } else {
+	// 	n.inodes = append(n.inodes, rightSibling.inodes...)
+	// 	n.parent.children.RemoveAt(parentDeletionIdx + 1)
+	// }
+
+	return nil
+}
+
+func (n *node) getPredecessor() inode {
+	if len(n.children) == 0 {
+		if float64(len(n.inodes)) > math.Floor((float64(n.order-1))/2) {
+			p := n.inodes[len(n.inodes)-1]
+			n.inodes = n.inodes[:len(n.inodes)-1]
+
+			return p
+		}
+
+		return nil
+	}
+
+	return n.children[len(n.children)-1].getPredecessor()
+}
+
+func (n *node) getSuccessor() inode {
+	if len(n.children) == 0 {
+		if float64(len(n.inodes)) > math.Floor((float64(n.order-1))/2) {
+			s := n.inodes[0]
+			n.inodes = n.inodes[1:]
+
+			return s
+		}
+
+		return nil
+
+	}
+
+	return n.children[0].getSuccessor()
 }
 
 func (i *Inodes) getInsertionIdx(key []byte) int {
