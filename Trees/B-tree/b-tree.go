@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strings"
 )
 
 type BTree struct {
@@ -96,6 +97,10 @@ func (b *BTree) Delete(key []byte) error {
 
 	b.root.delete(key)
 	return nil
+}
+
+func (b *BTree) Visualize() string {
+	return b.root.Visualize()
 }
 
 func (n *node) put(key []byte) (*node, error) {
@@ -327,6 +332,33 @@ func delete(n *node, deletionIdx int) error {
 	// }
 
 	return nil
+}
+
+func (n *node) Visualize() string {
+	if n == nil {
+		return ""
+	}
+
+	var result strings.Builder
+	q := []*node{n}
+	for len(q) > 0 {
+		var nextQ []*node
+		for _, node := range q {
+			var localResult string
+			for i, inode := range node.inodes {
+				localResult += string(inode)
+				if i < len(node.inodes)-1 {
+					localResult += ","
+				}
+			}
+			result.WriteString(fmt.Sprintf("(%v)\t", localResult))
+			nextQ = append(nextQ, node.children...)
+		}
+		result.WriteString("\n")
+		q = nextQ
+	}
+
+	return result.String()
 }
 
 func (n *node) getPredecessor() inode {
