@@ -1,6 +1,7 @@
 package B_tree
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 
@@ -159,5 +160,27 @@ func Test_Delete(t *testing.T) {
 			assert.True(t, ok, fmt.Sprintf("Key %s should still be in the tree", key))
 			assert.Equal(t, []byte(key), found, fmt.Sprintf("Value for key %s should still be %s", key, key))
 		}
+	})
+}
+
+func Test_Visualize(t *testing.T) {
+	t.Run("print tree", func(t *testing.T) {
+		buf := []byte{}
+		out := bytes.NewBuffer(buf)
+		tree, _ := New(4)
+		keys := []string{"10", "20", "40", "50", "60", "70", "80", "30", "35", "05", "15"}
+		for _, key := range keys {
+			tree.Insert([]byte(key))
+		}
+
+		fmt.Fprintf(out, "%s", tree.Visualize())
+		expectedTreeStr := "(40)\t\n(15,30)\t(70)\t\n(05,10)\t(20)\t(35)\t(50,60)\t(80)\t\n"
+
+		assert.Equal(
+			t, expectedTreeStr, out.String(),
+			fmt.Sprintf(
+				"tree should look like\n%s\ngot:\n%s",
+				expectedTreeStr, out.String()),
+		)
 	})
 }
